@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -94,6 +96,12 @@ builder.Services.AddAuthentication(options =>
 // Đăng ký các Service xử lý nghiệp vụ (Dependency Injection)
 builder.Services.AddScoped<IMangakaService, MangakaService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ISeriesService, SeriesService>();
+builder.Services.AddScoped<IChapterService, ChapterService>();
+builder.Services.AddScoped<IPageService, PageService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<IWorkflowService, WorkflowService>();
+
 
 var app = builder.Build();
 
@@ -106,7 +114,16 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
-app.UseStaticFiles();
+var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "Uploads");
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsPath),
+    RequestPath = "/Uploads"
+});
 
 // Kích hoạt CORS (Đặt trước Authentication/Authorization)
 app.UseCors("AllowAll");

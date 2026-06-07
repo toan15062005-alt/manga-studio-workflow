@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using MangaStudio.Backend.Services.Interfaces;
+using System.Security.Claims;
 
 namespace MangaStudio.Backend.Controllers;
 
@@ -53,7 +54,19 @@ public class MangakaController : ControllerBase
     [HttpPost("chapters/{id}/upload-pages")]
     public async Task<IActionResult> UploadPage(Guid id, IFormFile file)
     { 
-        var result = await _mangakaService.UploadPage(id, file);
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest("File không hợp lệ hoặc trống.");
+        }
+
+        // Lấy User ID từ Claims của JWT Token
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized("Không xác định được người dùng đăng nhập.");
+        }
+
+        var result = await _mangakaService.UploadPage(id, file, userId);
         return Ok(result);
     }
 }
