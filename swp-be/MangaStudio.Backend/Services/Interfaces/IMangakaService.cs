@@ -8,5 +8,5 @@ public interface IMangakaService
 
     Task<List<MangaSeriesDto>> GetSeries(Guid mangakaId);
 
-    Task<string> UploadPage(Guid chapterId, IFormFile file);
+    Task<string> UploadPage(Guid chapterId, IFormFile file, Guid uploadedById);
 }
